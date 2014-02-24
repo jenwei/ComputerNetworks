@@ -7,45 +7,72 @@ class UDP_Client(object):
     """ Computer Networks Chapter 4: Sockets.  UDP Client example. """ 
     
     
-    def __init__(self,IP='127.0.0.1', port=7400,Server_Address=("127.0.0.1",5280)):
+    def __init__(self, myPort = 7890, Server_Address=("127.0.0.1",5280)):
 
-        socket, AF_INET, SOCK_DGRAM, timeout = CN_Sockets.socket, CN_Sockets.AF_INET, CN_Sockets.SOCK_DGRAM, CN_Sockets.timeout
+        socket, AF_INET, SOCK_DGRAM, self.timeout = CN_Sockets.socket, CN_Sockets.AF_INET, CN_Sockets.SOCK_DGRAM, CN_Sockets.timeout
 
-        with socket(AF_INET,SOCK_DGRAM) as sock:
-            sock.bind((IP,port))
-            sock.settimeout(2.0) # 2 second timeout
+        self.myPort = myPort
+        self.Server_Address = Server_Address
+        with socket(AF_INET,SOCK_DGRAM) as self.sock:
+            self.sock.bind(('127.0.0.1', myPort)) # invisible to the outside world
+            self.sock.settimeout(2.0) # 2 second timeout
             
             print ("UDP_Client started for UDP_Server at IP address {} on port {}".format(
-                Server_Address[0],Server_Address[1]))
+                self.Server_Address[0],self.Server_Address[1]))
+
+            # auto sending first message
+            self.sendStrMessage("Hello Server!")
+            msg = self.receiveMessage()
+            print(msg)
 
     
             while True:
                 
-                str_message = input("Enter message to send to server:\n")
+                str_message = input("Enter message to send to server: ")
 
                 if not str_message:
                     break
-                
-                bytearray_message = bytearray(str_message,encoding="UTF-8")
 
-                bytes_sent = sock.sendto(bytearray_message, Server_Address)
-                
-                print ("{} bytes sent".format(bytes_sent))
-
-                t=0
-
-                while True:
-                    try:
-                        bytearray_msg, address = sock.recvfrom(1024)
-                        source_IP, source_port = address
-                        str_message =(bytearray_msg.decode("UTF-8"))
-                        print(str_message)
-                        t+=1
-
-                    except timeout:
-                        break
+                self.sendStrMessage(str_message)
+                msg = self.receiveMessage()
+                print(msg)
 
         print("UDP_Client ended")
+        
+    def sendStrMessage(self, message):
+        bytearray_message = bytearray(message,encoding="UTF-8")
+        bytes_sent = self.sock.sendto(bytearray_message, self.Server_Address)
+        # print ("{} bytes sent".format(bytes_sent))
+    
+    
+    def receiveMessage(self):
+        t = 0
+        while True:
+            try:
+                
+                bytearray_msg, address = self.sock.recvfrom(1024)
+                source_IP, source_port = address
+                return self.decodeMessage(bytearray_msg.decode("UTF-8"))
+            
+            except self.timeout:
+                t += 1
+                print (".",end="",flush=True)
+                return
+    
+    def decodeMessage(self, string):
+        return self.Message(string)
+    
+    class Message:
+        def __init__(self, message = ""):
+            self.message = message
+        
+        def __str__(self):
+            return self.message
+
+
+
+
+
 
     
 
