@@ -21,8 +21,7 @@ class UDP_Client(object):
 
             # auto sending first message
             self.sendStrMessage("Hello Server!")
-            msg = self.receiveMessage()
-            print(msg)
+            self.receiveMessage()
 
     
             while True:
@@ -33,9 +32,7 @@ class UDP_Client(object):
                     break
 
                 self.sendStrMessage(str_message)
-                #msg =
                 self.receiveMessage()
-                #print(msg)
 
         print("UDP_Client ended")
         
@@ -46,7 +43,6 @@ class UDP_Client(object):
     
     
     def receiveMessage(self):
-
         while True:
             try:
                 
