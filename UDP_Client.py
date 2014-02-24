@@ -33,8 +33,9 @@ class UDP_Client(object):
                     break
 
                 self.sendStrMessage(str_message)
-                msg = self.receiveMessage()
-                print(msg)
+                #msg =
+                self.receiveMessage()
+                #print(msg)
 
         print("UDP_Client ended")
         
@@ -51,7 +52,7 @@ class UDP_Client(object):
                 
                 bytearray_msg, address = self.sock.recvfrom(1024)
                 source_IP, source_port = address
-                return self.decodeMessage(bytearray_msg.decode("UTF-8"))
+                print(self.decodeMessage(bytearray_msg.decode("UTF-8")))
             
             except self.timeout:
                 break
