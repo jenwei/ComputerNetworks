@@ -14,7 +14,7 @@ class UDP_Client(object):
 
         self.Server_Address = Server_Address
         with socket(AF_INET,SOCK_DGRAM) as self.sock:
-            self.sock.settimeout(2.0) # 2 second timeout
+            self.sock.settimeout(0.1) # 2 second timeout
             
             print ("UDP_Client started for UDP_Server at IP address {} on port {}".format(
                 self.Server_Address[0],self.Server_Address[1]))
