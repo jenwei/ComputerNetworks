@@ -40,6 +40,14 @@ class UDP_Server(object):
                         LastMsg=Users[address]
                         print ("\nMessage received from IP address {}, port {}:".format(
                             source_IP,source_port))
+
+                        if (bytearray_msg.decode("UTF-8"))[0] == '/':
+                            command = bytearray_msg.decode("UTF-8")
+                            if command == "/help":
+                            bytearray_message = bytearray("/help",encoding="UTF-8")
+                            bytes_sent = sock.sendto(bytearray_message, address)
+                            
+                            
                     
                         str_message =[source_IP+': '+(bytearray_msg.decode("UTF-8"))]
                         print(str_message)
