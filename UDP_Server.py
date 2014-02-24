@@ -17,6 +17,7 @@ class UDP_Server(object):
             Users={}
             MsgList=[]
             Times={}
+            password='admin'
             MsgCount=0
             print ("UDP Server started on IP Address {}, port {}".format(IP,port))
 
@@ -37,31 +38,41 @@ class UDP_Server(object):
                         bytearray_message = bytearray('Your IP and port have been added to the system!  Congratulations!' ,encoding="UTF-8")
                         bytes_sent = sock.sendto(bytearray_message, address)
                     elif test==True:
-                        LastMsg=Users[address]
                         print ("\nMessage received from IP address {}, port {}:".format(
                             source_IP,source_port))
 
                         if (bytearray_msg.decode("UTF-8"))[0] == '/':
                             command = bytearray_msg.decode("UTF-8")
+                            print (source_IP+': '+command)
                             if command == "/help":
-                            bytearray_message = bytearray("/help",encoding="UTF-8")
-                            bytes_sent = sock.sendto(bytearray_message, address)
+                                bytearray_message = bytearray("List of avaliable commands are: /admin {}, /help",encoding="UTF-8")
+                                bytes_sent = sock.sendto(bytearray_message, address)
+                            if command == "/admin":
+                                bytearray_message = bytearray("Admin permissions require a password to logon!",encoding="UTF-8")
+                                bytes_sent = sock.sendto(bytearray_message, address)
+                            if command == "/admin "+password:
+                                bytearray_message = bytearray("You are now Admin!(Too bad it doesn't do anything...)",encoding="UTF-8")
+                                bytes_sent = sock.sendto(bytearray_message, address)
+                            else:
+                                bytearray_message = bytearray("The command you entered is not recognized.",encoding="UTF-8")
+                                bytes_sent = sock.sendto(bytearray_message, address)
                             
-                            
-                    
-                        str_message =[source_IP+': '+(bytearray_msg.decode("UTF-8"))]
-                        print(str_message)
                         
-                        Times[st]=MsgCount
-                        MsgList+=str_message
+                        else:
+                            LastMsg=Users[address]
+                            str_message =[source_IP+': '+(bytearray_msg.decode("UTF-8"))]
+                            print(str_message)
                         
-                        for i in range(Times[LastMsg]+1,Times[st]+1):
-                            bytearray_message = bytearray(MsgList[i],encoding="UTF-8")
-                            bytes_sent = sock.sendto(bytearray_message, address)
+                            Times[st]=MsgCount
+                            MsgList+=str_message
+                        
+                            for i in range(Times[LastMsg]+1,Times[st]+1):
+                                bytearray_message = bytearray(MsgList[i],encoding="UTF-8")
+                                bytes_sent = sock.sendto(bytearray_message, address)
 
-                        MsgCount+=1
+                            MsgCount+=1
 
-                        Users[address]=st
+                            Users[address]=st
         
                 except timeout:
                     print (".",end="",flush=True)
