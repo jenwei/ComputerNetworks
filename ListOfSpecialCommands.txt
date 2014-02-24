@@ -1,0 +1,13 @@
+﻿/help
+
+/logon
+
+/logoff?
+
+/admin
+	/ban
+
+/changeName
+
+
+
