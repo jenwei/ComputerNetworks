@@ -1,13 +1,16 @@
-﻿/help
+﻿/help (DONE)
 
-/logon
+/logon (DONE)
 
-/logoff?
+/logoff? (DONE?)
 
-/admin
-	/ban
+/admin (DONE)
+	/ban (DONE?)
 
+TO-DO:
+IMPLEMENT USER NAMES
 /changeName
+
 
 
 
