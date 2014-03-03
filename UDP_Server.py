@@ -21,8 +21,8 @@ class UDP_Server(object):
             Times={} #Stores index for each message based on timestamp
             password='admin' #Current Admin password
             MsgCount=0 #Index of most recent message on server
-            msgHelp='/admin {} '+ '/adminInfo '+ '/help '+'/logoff ' #List of Client Commands
-            msgAdminHelp='/ban ' #List of Admin Commands
+            msgHelp='/admin {password} '+ '/adminInfo '+ '/help '+'/logoff ' #List of Client Commands
+            msgAdminHelp='/ban {user}' #List of Admin Commands
             print ("UDP Server started on IP Address {}, port {}".format(IP,port))
 
             while True:
@@ -42,7 +42,7 @@ class UDP_Server(object):
                         bytearray_message = bytearray('Your IP and port have been added to the system!  Congratulations!' ,encoding="UTF-8")
                         bytes_sent = sock.sendto(bytearray_message, address)
                     elif test==True:
-                        if address not in BannedList:
+                        if source_IP not in BannedList:
                             print ("\nMessage received from IP address {}, port {}:".format(
                                 source_IP,source_port))
 
@@ -52,14 +52,6 @@ class UDP_Server(object):
                                 if command == "/help": #Tests for /help command
                                     bytearray_message = bytearray("List of avaliable commands are: "+msgHelp,encoding="UTF-8")
                                     bytes_sent = sock.sendto(bytearray_message, address)
-                                elif command[:6] == "/admin":
-                                    if command == "/admin "+password: #Tests is Admin password is provided
-                                        bytearray_message = bytearray("You are now Admin!",encoding="UTF-8")
-                                        bytes_sent = sock.sendto(bytearray_message, address)
-                                        AdminList[address] = True #Adds user to Admin list
-                                    else: #Triggers if wrong/no password is provided
-                                        bytearray_message = bytearray("Admin permissions require the correct password to logon!",encoding="UTF-8")
-                                        bytes_sent = sock.sendto(bytearray_message, address)
                                     
                                     #New command checks added (2/25/2014)
                                     #Note - commands need to be checked (sorry!)
@@ -69,16 +61,30 @@ class UDP_Server(object):
                                         bytearray_message = bytearray("As Admin, You can use: "+msgAdminHelp+msgHelp  ,encoding="UTF-8")                                        
                                     else:
                                         bytearray_message = bytearray("If you are an admin, type /admin [password] to logon",encoding="UTF-8")
+                                    bytes_sent = sock.sendto(bytearray_message, address)
+                                elif command[:6] == "/admin":
+                                    if command == "/admin "+password: #Tests is Admin password is provided
+                                        bytearray_message = bytearray("You are now Admin!",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
+                                        AdminList[address] = True #Adds user to Admin list
+                                    else: #Triggers if wrong/no password is provided
+                                        bytearray_message = bytearray("Admin permissions require the correct password to logon!",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
                                 elif command == "/logoff":
                                     bytearray_message = bytearray("BYE - you will now be logged off",encoding="UTF-8")
+                                    bytes_sent = sock.sendto(bytearray_message, address)
                                     break
                                 elif "/ban" in command:
+                                    print (AdminList)
                                     if address in AdminList:
                                         who = command[5:]
+                                        print (who)
                                         BannedList[who] = True
-                                        bytearray_message = bytearray("Your ban is now active",encoding-"UTF-8")
+                                        bytearray_message = bytearray("Your ban on "+who+" is now active",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
                                     else:
                                         bytearray_message = bytearray("You must be Admin to use this command.",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
                                         
                                 else:
                                     bytearray_message = bytearray("The command you entered is not recognized.",encoding="UTF-8")
@@ -105,7 +111,8 @@ class UDP_Server(object):
                         ##Added with ban Code
                         else:
                             bytearray_message=bytearray("You are on the 'banned' list - Contact an Admin to have the ban lifted",encoding="UTF-8")
-                            break
+                            bytes_sent = sock.sendto(bytearray_message, address)
+                            
                         ##Nothing changed below
         
                 except timeout: ## Handles timeout with the server.
