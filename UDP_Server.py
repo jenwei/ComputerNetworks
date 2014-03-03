@@ -6,21 +6,23 @@ import Users
 class UDP_Server(object):
     
     def __init__(self,IP="192.168.49.127",port=5280):
-        socket, AF_INET, SOCK_DGRAM, timeout = CN_Sockets.socket, CN_Sockets.AF_INET, CN_Sockets.SOCK_DGRAM, CN_Sockets.timeout
         while True:
-            run_the_chat()
-    def run_the_chat():
-        
+            self.run_the_chat(IP,port)
+
+    def run_the_chat(self,IP,port):
+        socket, AF_INET, SOCK_DGRAM, timeout = CN_Sockets.socket, CN_Sockets.AF_INET, CN_Sockets.SOCK_DGRAM, CN_Sockets.timeout
         with socket(AF_INET, SOCK_DGRAM) as sock:
             sock.bind((IP,port))
             sock.settimeout(2.0) # 2 second timeout
             Users={}
-            MsgList=[]
+            MsgList=[] #List of all messages on server
             AdminList={} #List of Admins (added 2/25/2014} Stores Address and T/F
             BannedList={} #Store Address and T/F
-            Times={}
-            password='admin'
-            MsgCount=0
+            Times={} #Stores index for each message based on timestamp
+            password='admin' #Current Admin password
+            MsgCount=0 #Index of most recent message on server
+            msgHelp=['/admin {}', '/adminInfo', '/help','/logoff'] #List of Client Commands
+            msgAdminHelp=['/ban'] #List of Admin Commands
             print ("UDP Server started on IP Address {}, port {}".format(IP,port))
 
             while True:
@@ -31,8 +33,8 @@ class UDP_Server(object):
                     ts=time.time()
                     st=datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
                     
-                    test=address in Users
-                    if test==False:
+                    test=address in Users #Returns True is user is logged on to the server, False if not
+                    if test==False: #Requests user to logon for the first time
                         Users[address]=st
                         MsgList+=['']
                         Times[st]=MsgCount
@@ -40,64 +42,73 @@ class UDP_Server(object):
                         bytearray_message = bytearray('Your IP and port have been added to the system!  Congratulations!' ,encoding="UTF-8")
                         bytes_sent = sock.sendto(bytearray_message, address)
                     elif test==True:
-                        if bannedList[address}==False:
+                        if bannedList[address]==False:
                             print ("\nMessage received from IP address {}, port {}:".format(
                                 source_IP,source_port))
 
-                            if (bytearray_msg.decode("UTF-8"))[0] == '/':
+                            if (bytearray_msg.decode("UTF-8"))[0] == '/':#Tests to see if the message starts with a / and is therefore a command
                                 command = bytearray_msg.decode("UTF-8")
                                 print (source_IP+': '+command)
-                                if command == "/help":
-                                    bytearray_message = bytearray("List of avaliable commands are: /admin {}, /adminInfo, /help",encoding="UTF-8")
+                                if command == "/help": #Tests for /help command
+                                    bytearray_message = bytearray("List of avaliable commands are: "+msgHelp,encoding="UTF-8")
                                     bytes_sent = sock.sendto(bytearray_message, address)
-                                if command == "/admin":
-                                    bytearray_message = bytearray("Admin permissions require a password to logon!",encoding="UTF-8")
-                                    bytes_sent = sock.sendto(bytearray_message, address)
-                                if command == "/admin "+password:
-                                    bytearray_message = bytearray("You are now Admin!(Too bad it doesn't do anything...)",encoding="UTF-8")
-                                    bytes_sent = sock.sendto(bytearray_message, address)
-                                    AdminList[address] = True
+                                elif command == "/admin":
+                                    if command == "/admin "+password: #Tests is Admin password is provided
+                                        bytearray_message = bytearray("You are now Admin!(Too bad it doesn't do anything...)",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
+                                        AdminList[address] = True #Adds user to Admin list
+                                    else: #Triggers if wrong/no password is provided
+                                        bytearray_message = bytearray("Admin permissions require a password to logon!",encoding="UTF-8")
+                                        bytes_sent = sock.sendto(bytearray_message, address)
                                     
                                     #New command checks added (2/25/2014)
                                     #Note - commands need to be checked (sorry!)
-                                if command == "/adminInfo":
-                                    bytearray_message = bytearray("If you are an admin, type /admin [password] to logon",encoding="UTF-8")
-                                if command == "/logoff":
+                                        
+                                elif command == "/adminInfo":
+                                    if AdminList[address]:
+                                        bytearray_message = bytearray("As Admin, You can use: "+msgAdminHelp+msgHelp  ,encoding="UTF-8")                                        
+                                    else:
+                                        bytearray_message = bytearray("If you are an admin, type /admin [password] to logon",encoding="UTF-8")
+                                elif command == "/logoff":
                                     bytearray_message = bytearray("BYE - you will now be logged off",encoding="UTF-8")
                                     break
-                                if "/ban " in command:
+                                elif "/ban " in command:
                                     if AdminList[address]:
                                         who = command[5:]
                                         BannedList[who] = True
                                         bytearray_message = bytearray("Your ban is now active",encoding-"UTF-8")
                                     else:
-                                        bytearray_message = bytearray("You do not have the authority to ban a user",encoding="UTF-8")
+                                        bytearray_message = bytearray("You must be Admin to use this command.",encoding="UTF-8")
                                         
                                 else:
                                     bytearray_message = bytearray("The command you entered is not recognized.",encoding="UTF-8")
                                     bytes_sent = sock.sendto(bytearray_message, address)
+
+                            ##Code below this point has not been modified at all
+                        
+                            else:
+                                LastMsg=Users[address] #Reads the last message index provided by the Server to the Client since logon
+                                str_message =[source_IP+': '+(bytearray_msg.decode("UTF-8"))]
+                                print(str_message) #Prints the message out to the server
+                            
+                                Times[st]=MsgCount #Uses timestamp to access current message index
+                                MsgList+=str_message #Adds latest message to the list of all messages sinse server startup
+                            
+                                for i in range(Times[LastMsg]+1,Times[st]+1): #Transmitts all messages from last message index to current message index.
+                                    bytearray_message = bytearray(MsgList[i],encoding="UTF-8") #Back-Translate into UTF-8
+                                    bytes_sent = sock.sendto(bytearray_message, address) #Transmit message
+
+                                MsgCount+=1
+
+                                Users[address]=st
+                                
+                        ##Added with ban Code
                         else:
                             bytearray_message=bytearray("You are on the 'banned' list - Contact an Admin to have the ban lifted",encoding="UTF-8")
                             break
-                        ##Code below this point has not been modified at all
-                        
-                        else:
-                            LastMsg=Users[address]
-                            str_message =[source_IP+': '+(bytearray_msg.decode("UTF-8"))]
-                            print(str_message)
-                        
-                            Times[st]=MsgCount
-                            MsgList+=str_message
-                        
-                            for i in range(Times[LastMsg]+1,Times[st]+1):
-                                bytearray_message = bytearray(MsgList[i],encoding="UTF-8")
-                                bytes_sent = sock.sendto(bytearray_message, address)
-
-                            MsgCount+=1
-
-                            Users[address]=st
+                        ##Nothing changed below
         
-                except timeout:
+                except timeout: ## Handles timeout with the server.
                     print (".",end="",flush=True)
                     continue
                 
