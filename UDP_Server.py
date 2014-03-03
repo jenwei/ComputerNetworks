@@ -42,7 +42,7 @@ class UDP_Server(object):
                         bytearray_message = bytearray('Your IP and port have been added to the system!  Congratulations!' ,encoding="UTF-8")
                         bytes_sent = sock.sendto(bytearray_message, address)
                     elif test==True:
-                        if bannedList[address]==False:
+                        if BannedList[address]==False:
                             print ("\nMessage received from IP address {}, port {}:".format(
                                 source_IP,source_port))
 
