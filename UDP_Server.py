@@ -21,8 +21,8 @@ class UDP_Server(object):
             Times={} #Stores index for each message based on timestamp
             password='admin' #Current Admin password
             MsgCount=0 #Index of most recent message on server
-            msgHelp=['/admin {}', '/adminInfo', '/help','/logoff'] #List of Client Commands
-            msgAdminHelp=['/ban'] #List of Admin Commands
+            msgHelp='/admin {} '+ '/adminInfo '+ '/help '+'/logoff ' #List of Client Commands
+            msgAdminHelp='/ban ' #List of Admin Commands
             print ("UDP Server started on IP Address {}, port {}".format(IP,port))
 
             while True:
@@ -42,7 +42,7 @@ class UDP_Server(object):
                         bytearray_message = bytearray('Your IP and port have been added to the system!  Congratulations!' ,encoding="UTF-8")
                         bytes_sent = sock.sendto(bytearray_message, address)
                     elif test==True:
-                        if BannedList[address]==False:
+                        if address not in BannedList:
                             print ("\nMessage received from IP address {}, port {}:".format(
                                 source_IP,source_port))
 
