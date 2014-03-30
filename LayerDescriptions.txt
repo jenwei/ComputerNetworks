@@ -1,0 +1,6 @@
+﻿Server Layer Description:
+
+Server receives a message from the client. If user is not in the system, the IP and port will be added to system, and the message is not sent over. Otherwise, the server will continue to check the user. If the user has not been banned, the server will decode the message and check for special commands defined as inputs that begin with '/'. If the user does not use a special command, the message will be back to the clients. If the user has been banned,  code will break and end with a message telling the user that s/he has been banned.
+
+
+	
